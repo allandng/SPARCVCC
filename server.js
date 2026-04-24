@@ -21,8 +21,9 @@ app.post('/api/claude', async (req, res) => {
       }),
     });
     const data = await response.json();
+    if (data.error) throw new Error(`Gemini: ${data.error.message}`);
     const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error('Empty response from Gemini');
+    if (!text) throw new Error('Gemini returned no text in response');
     res.json({ text });
   } catch (err) {
     console.error('Gemini API error:', err.message);
