@@ -1,3 +1,4 @@
+require('dotenv').config();
 const express = require('express');
 const path = require('path');
 
@@ -5,28 +6,32 @@ const app = express();
 app.use(express.json());
 app.use(express.static(path.join(__dirname)));
 
-const GEMINI_URL = () =>
-  `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${process.env.GEMINI_API_KEY}`;
+const DEEPSEEK_URL = 'https://api.deepseek.com/v1/chat/completions';
 
 app.post('/api/claude', async (req, res) => {
   const { prompt } = req.body;
   if (!prompt) return res.status(400).json({ error: 'prompt required' });
 
   try {
-    const response = await fetch(GEMINI_URL(), {
+    const response = await fetch(DEEPSEEK_URL, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${process.env.DEEPSEEK_API_KEY}`,
+      },
       body: JSON.stringify({
-        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+        model: 'deepseek-chat',
+        messages: [{ role: 'user', content: prompt }],
+        max_tokens: 600,
       }),
     });
     const data = await response.json();
-    if (data.error) throw new Error(`Gemini: ${data.error.message}`);
-    const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-    if (!text) throw new Error('Gemini returned no text in response');
+    if (data.error) throw new Error(`DeepSeek: ${data.error.message}`);
+    const text = data.choices?.[0]?.message?.content;
+    if (!text) throw new Error('DeepSeek returned no text in response');
     res.json({ text });
   } catch (err) {
-    console.error('Gemini API error:', err.message);
+    console.error('DeepSeek API error:', err.message);
     res.status(500).json({ error: err.message });
   }
 });
