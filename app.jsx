@@ -9,9 +9,9 @@ const TWEAK_DEFAULTS = {
 const INTENSITY_LABELS = ["gentle", "pointed", "spicy", "savage", "nuclear"];
 const UNHINGED_LABELS = ["quirky", "weird", "deranged", "feral", "cosmic horror"];
 
-// ── Claude API helper ──────────────────────────────────────────────
-async function claudeComplete(prompt) {
-  const res = await fetch('/api/claude', {
+// ── Gemini API helper ──────────────────────────────────────────────
+async function geminiComplete(prompt) {
+  const res = await fetch('/api/gemini', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ prompt }),
@@ -194,7 +194,7 @@ Return ONLY valid JSON, no markdown, no code fence:
 {"suit":"...","human":"...","unhinged":"..."}`;
 
   try {
-    const raw = await claudeComplete(prompt);
+    const raw = await geminiComplete(prompt);
     const cleaned = raw.replace(/```json|```/g, "").trim();
     const match = cleaned.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(match ? match[0] : cleaned);
@@ -204,7 +204,7 @@ Return ONLY valid JSON, no markdown, no code fence:
       unhinged: parsed.unhinged || "I cannot come in today. A goose has pinned me to my driveway and is lecturing me about property law.",
     };
   } catch (e) {
-    console.warn("Claude call failed, using fallback", e);
+    console.warn("Gemini call failed, using fallback", e);
     return {
       suit:     "I'm unable to attend today due to unforeseen personal circumstances. I'll follow up to reschedule.",
       human:    "Hey, not gonna make it today — feeling kinda off. Catch up soon?",
@@ -229,7 +229,7 @@ Return ONLY valid JSON, no markdown, no code fence:
 {"nonna":"...","bestie":"...","coach":"..."}`;
 
   try {
-    const raw = await claudeComplete(prompt);
+    const raw = await geminiComplete(prompt);
     const cleaned = raw.replace(/```json|```/g, "").trim();
     const match = cleaned.match(/\{[\s\S]*\}/);
     const parsed = JSON.parse(match ? match[0] : cleaned);
@@ -239,7 +239,7 @@ Return ONLY valid JSON, no markdown, no code fence:
       coach:  parsed.coach  || "Open the thing. Stare at it for 5 minutes.",
     };
   } catch (e) {
-    console.warn("Claude call failed, using fallback", e);
+    console.warn("Gemini call failed, using fallback", e);
     return {
       nonna:  "Madonna mia… procrastinating again? Your nonna is rolling in her grave, and she's not even dead yet.",
       bestie: "OKAY but first of all? Iconic of you to even ADMIT this. We love a self-aware legend. Now hop to it babe 💅",
