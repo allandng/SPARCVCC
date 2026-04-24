@@ -389,6 +389,12 @@ function IntensityBars({ value, onChange, labels, variant = "booth" }) {
   );
 }
 
+// ─────────────────────────── Sound ───────────────────────────
+function playSound(src) {
+  const audio = new Audio(src);
+  audio.play().catch(() => {});
+}
+
 // ─────────────────────────── App ───────────────────────────
 function App() {
   const [tweaks, setTweak] = useTweaks(TWEAK_DEFAULTS);
@@ -401,6 +407,8 @@ function App() {
   const inputRef = React.useRef(null);
   const idRef = React.useRef(0);
   const nid = () => ++idRef.current;
+  // Persists each mode's chat so switching mid-conversation doesn't lose it
+  const chatHistoryRef = React.useRef({ booth: [], generator: [] });
 
   const M = MODES[mode];
 
@@ -416,8 +424,10 @@ function App() {
 
   const switchMode = (next) => {
     if (next === mode || isWorking) return;
+    chatHistoryRef.current[mode] = messages;
+    playSound(next === "generator" ? "/sounds/Devil.mp3" : "/sounds/Angel.mp3");
     setMode(next);
-    setMessages([]);
+    setMessages(chatHistoryRef.current[next]);
     setInput("");
   };
 
@@ -433,6 +443,7 @@ function App() {
     const personaKeys = M.personas;
     const copyable = mode === "generator";
     const firstId = nid();
+    playSound("/sounds/chat.mp3");
     setMessages((m) => [
       ...m,
       userMsg,
@@ -456,6 +467,7 @@ function App() {
       }
       await sleep(revealDelays[i]);
       const key = personaKeys[i];
+      playSound("/sounds/chat.mp3");
       setMessages((m) =>
         m.map((x) => (x.id === ids[i] ? { ...x, text: responses[key], typing: false } : x))
       );
